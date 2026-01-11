@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benefit Calculator 2026</title>
+  <title>Benefit Calculator Fixed Rates</title>
   <style>
     :root {
       --primary-blue: #003c78;
@@ -45,7 +45,6 @@
 
     .content { padding: 20px; }
 
-    /* ปรับปรุงการแสดงผลตารางให้รองรับมือถือ */
     .input-group {
       display: flex;
       flex-direction: column;
@@ -133,11 +132,9 @@
       color: #aaa;
     }
 
-    /* Media Query สำหรับมือถือหน้าจอเล็ก */
     @media (max-width: 400px) {
       .total-display { font-size: 2rem; }
       .field-row { grid-template-columns: 1fr; }
-      .full-width { grid-column: span 1; }
     }
   </style>
 </head>
@@ -153,11 +150,11 @@
 
   <div class="content">
     <div class="input-group">
-      <!-- Media Selection -->
+      <!-- Media Selection (สำหรับ Label เท่านั้น) -->
       <div class="full-width">
-        <label>Media Type</label>
-        <select id="type-select" onchange="applyPreset()">
-          <option value="">-- Tap to Select Media --</option>
+        <label>Media Type (For reference only)</label>
+        <select id="type-select" onchange="updateLabelOnly()">
+          <option value="none">-- Tap to Select Media --</option>
           <option value="gas_pacpp">Gas / PACPP</option>
           <option value="condy">CONDY PACPP</option>
           <option value="remote">Gas Remote Platform</option>
@@ -170,21 +167,21 @@
         <input type="number" id="val-h" placeholder="Enter hours..." oninput="calculate()">
       </div>
 
-      <!-- Read-only Fields -->
+      <!-- Fixed Read-only Fields (ค่าตายตัว แก้ไขไม่ได้) -->
       <div class="field-row">
         <div>
-          <label>Rate: mmscf/hrs</label>
-          <input type="number" id="val-r" readonly value="0">
+          <label>Rate: mmscf/hrs (Fixed)</label>
+          <input type="number" id="val-r" readonly value="9.17">
         </div>
         <div>
-          <label>$ per mmscf</label>
-          <input type="number" id="val-p" readonly value="0">
+          <label>$ per mmscf (Fixed)</label>
+          <input type="number" id="val-p" readonly value="6000">
         </div>
       </div>
     </div>
 
     <div class="result-section">
-      <div id="selected-label">Please select media type above</div>
+      <div id="selected-label">Please enter hours above</div>
       <div class="total-display" id="grand-total">$0.00</div>
       <div class="save-cost-badge">SAVE COST</div>
     </div>
@@ -192,44 +189,40 @@
 
   <div class="footer">
     © CHEVRON — INTERNAL USE ONLY<br>
-    Optimized for Mobile Devices
+    Optimized for Mobile Devices (Updated 2026)
   </div>
 </div>
 
 <script>
-  // ข้อมูลต้นทุนคงที่ (Fixed Rates)
-  const presets = {
-    gas_pacpp: { label: "Gas / PACPP", rate: 9.17, price: 6000 },
-    condy:     { label: "CONDY PACPP", rate: 396,  price: 60 },
-    remote:    { label: "Gas Remote Platform", rate: 0.21, price: 6000 }
+  // ลบ Presets ออกจาก JS เพราะค่าถูก Hardcode ไว้ใน HTML แล้ว
+  const mediaLabels = {
+    none: "Please enter hours above",
+    gas_pacpp: "Selected: Gas / PACPP",
+    condy: "Selected: CONDY PACPP",
+    remote: "Selected: Gas Remote Platform"
   };
 
-  function applyPreset() {
+  function updateLabelOnly() {
     const select = document.getElementById('type-select');
-    const data = presets[select.value];
-    
-    if (data) {
-      document.getElementById('val-r').value = data.rate;
-      document.getElementById('val-p').value = data.price;
-      document.getElementById('selected-label').innerText = "Selected: " + data.label;
-    } else {
-      document.getElementById('val-r').value = 0;
-      document.getElementById('val-p').value = 0;
-      document.getElementById('selected-label').innerText = "Please select media type above";
-    }
+    document.getElementById('selected-label').innerText = mediaLabels[select.value];
+    // ไม่มีการเปลี่ยนค่าใน R และ P อีกต่อไป
     calculate(); 
   }
 
   function calculate() {
+    // ดึงค่าจาก input fields ที่เป็นค่าคงที่ใน HTML
     const h = parseFloat(document.getElementById('val-h').value) || 0;
-    const r = parseFloat(document.getElementById('val-r').value) || 0;
-    const p = parseFloat(document.getElementById('val-p').value) || 0;
+    const r = parseFloat(document.getElementById('val-r').value); // ค่า 9.17
+    const p = parseFloat(document.getElementById('val-p').value); // ค่า 6000
     
     const total = h * r * p;
     
     document.getElementById('grand-total').innerText = 
       '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
+  
+  // เรียกคำนวณครั้งแรกเมื่อโหลดหน้าเว็บเพื่อให้แสดง $0.00
+  calculate();
 </script>
 
 </body>
