@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benefit Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .calculator-card {
+      width: 100%;
+      max-width: 550px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .hero {
+      position: relative;
+      height: 120px;
+      background: #003c78 linear-gradient(135deg, #003c78 0%, #0056b3 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+    }
+
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: white;
+      border-left: 5px solid #ffb81c;
+      backdrop-filter: blur(5px);
+    }
+
+    .hero-overlay h2 { margin: 0; font-size: 20px; }
+    .hero-overlay p { margin: 0; font-size: 12px; opacity: 0.9; }
+
+    .content { padding: 25px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th {
+      background-color: #003c78;
+      color: white;
+      padding: 12px 5px;
+      font-size: 11px; /* ปรับขนาดตัวอักษรหัวตารางให้พอดี */
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    td {
+      padding: 10px 5px;
+      border: 1px solid #eee;
+    }
+
+    .col-media { width: 35%; }
+    
+    select, input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+
+    select { cursor: pointer; background-color: #f9f9f9; }
+
+    .result-section {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid #e9ecef;
+    }
+
+    #selected-type-display {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .total-display {
+      color: #28a745;
+      font-weight: 800;
+      font-size: 28px;
+    }
+
+    .footer-text {
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator-card">
+  <div class="hero">
+    <div class="hero-overlay">
+      <h2>Benefit Calculator</h2>
+      <p>Operational Cost Saving Estimation</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-media">Media</th>
+          <th>Hours</th>
+          <th>rate: mmscf/hrs</th>
+          <th>$mmscf</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select id="type-select" onchange="applyPreset()">
+              <option value="">-- Choose Media --</option>
+              <option value="gas_pacpp">Gas / PACPP (Full Operations)</option>
+              <option value="condy">CONDY PACPP (Condensate)</option>
+              <option value="remote">Gas Remote Platform (Offshore)</option>
+            </select>
+          </td>
+          <td><input type="number" id="val-h" value="0" oninput="calculate()"></td>
+          <td><input type="number" step="0.01" id="val-r" value="0" oninput="calculate()"></td>
+          <td><input type="number" id="val-p" value="0" oninput="calculate()"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result-section">
+      <div id="selected-type-display">Please select media type</div>
+      <div class="total-display" id="grand-total">
+        $0.00
+      </div>
+      <div style="font-size: 13px; color: #28a745; font-weight: bold; margin-top: 5px; letter-spacing: 1px;">SAVE COST</div>
+    </div>
+
+    <div class="footer-text">
+      © Chevron — Internal Use Only<br>
+      Automated Estimation Tool (Updated 2026)
+    </div>
+  </div>
+</div>
+
+<script>
+  // ข้อมูล Preset (ใช้ค่าเดิมตามโค้ดต้นฉบับของคุณ)
+  const presets = {
+    gas_pacpp: { label: "Gas / PACPP (Full Operations)", hours: 1, rate: 9.17, price: 6000 },
+    condy:     { label: "CONDY PACPP (Condensate)",     hours: 1, rate: 396,  price: 60 },
+    remote:    { label: "Gas Remote Platform (Offshore)", hours: 5, rate: 0.21, price: 6000 }
+  };
+
+  function applyPreset() {
+    const select = document.getElementById('type-select');
+    const data = presets[select.value];
+    
+    if (data) {
+      document.getElementById('val-h').value = data.hours;
+      document.getElementById('val-r').value = data.rate;
+      document.getElementById('val-p').value = data.price;
+      document.getElementById('selected-type-display').innerText = "Selected: " + data.label;
+    } else {
+      document.getElementById('selected-type-display').innerText = "No media selected";
+    }
+    calculate(); 
+  }
+
+  function calculate() {
+    const h = parseFloat(document.getElementById('val-h').value) || 0;
+    const r = parseFloat(document.getElementById('val-r').value) || 0;
+    const p = parseFloat(document.getElementById('val-p').value) || 0;
+    
+    const total = h * r * p;
+    
+    document.getElementById('grand-total').innerText = 
+      '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+</script>
+
+</body>
+</html>
