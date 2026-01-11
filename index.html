@@ -1,9 +1,10 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benefit Calculator Fixed Rates</title>
+  <title>Benefit Calculator 2026</title>
   <style>
     :root {
       --primary-blue: #003c78;
@@ -79,18 +80,13 @@
       transition: all 0.3s;
     }
 
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--primary-blue);
-      box-shadow: 0 0 0 3px rgba(0,60,120,0.1);
-    }
-
-    /* สไตล์สำหรับช่องที่แก้ไขไม่ได้ */
+    /* ช่องที่แก้ไขไม่ได้ (Fixed) จะแสดงสีเทาและไม่อนุญาตให้พิมพ์ */
     input[readonly] {
-      background-color: #f8f9fa;
-      color: #6c757d;
-      border-color: #eee;
+      background-color: #f1f3f5;
+      color: #495057;
+      border-color: #e9ecef;
       cursor: not-allowed;
+      font-weight: bold;
     }
 
     .result-section {
@@ -105,6 +101,7 @@
       font-size: 0.9rem;
       color: #666;
       margin-bottom: 10px;
+      font-weight: 600;
     }
 
     .total-display {
@@ -150,38 +147,39 @@
 
   <div class="content">
     <div class="input-group">
-      <!-- Media Selection (สำหรับ Label เท่านั้น) -->
+      <!-- ส่วนเลือก Media -->
       <div class="full-width">
-        <label>Media Type (For reference only)</label>
-        <select id="type-select" onchange="updateLabelOnly()">
-          <option value="none">-- Tap to Select Media --</option>
+        <label>Media Type</label>
+        <select id="type-select" onchange="applyPreset()">
+          <option value="">-- Tap to Select Media --</option>
           <option value="gas_pacpp">Gas / PACPP</option>
           <option value="condy">CONDY PACPP</option>
           <option value="remote">Gas Remote Platform</option>
         </select>
       </div>
 
-      <!-- Hours Input -->
+      <!-- ส่วนกรอก Hours -->
       <div class="full-width">
         <label>Hours (Manual Input)</label>
         <input type="number" id="val-h" placeholder="Enter hours..." oninput="calculate()">
       </div>
 
-      <!-- Fixed Read-only Fields (ค่าตายตัว แก้ไขไม่ได้) -->
+      <!-- ส่วน Rate และ Price ที่ถูกล็อกค่าไว้ (Fixed & Readonly) -->
       <div class="field-row">
         <div>
-          <label>Rate: mmscf/hrs (Fixed)</label>
-          <input type="number" id="val-r" readonly value="9.17">
+          <label>Rate: mmscf/hrs</label>
+          <input type="number" id="val-r" readonly value="0">
         </div>
         <div>
-          <label>$ per mmscf (Fixed)</label>
-          <input type="number" id="val-p" readonly value="6000">
+          <label>$ per mmscf</label>
+          <input type="number" id="val-p" readonly value="0">
         </div>
       </div>
     </div>
 
+    <!-- ส่วนแสดงผล SAVE COST -->
     <div class="result-section">
-      <div id="selected-label">Please enter hours above</div>
+      <div id="selected-label">Please select media type above</div>
       <div class="total-display" id="grand-total">$0.00</div>
       <div class="save-cost-badge">SAVE COST</div>
     </div>
@@ -194,35 +192,43 @@
 </div>
 
 <script>
-  // ลบ Presets ออกจาก JS เพราะค่าถูก Hardcode ไว้ใน HTML แล้ว
-  const mediaLabels = {
-    none: "Please enter hours above",
-    gas_pacpp: "Selected: Gas / PACPP",
-    condy: "Selected: CONDY PACPP",
-    remote: "Selected: Gas Remote Platform"
+  // ค่าตายตัวที่ฟิกไว้ตามเงื่อนไข (Fixed Values)
+  const presets = {
+    gas_pacpp: { label: "Gas / PACPP", rate: 9.17, price: 6000 },
+    condy:     { label: "CONDY PACPP", rate: 396,  price: 60 },
+    remote:    { label: "Gas Remote Platform", rate: 0.21, price: 6000 }
   };
 
-  function updateLabelOnly() {
+  function applyPreset() {
     const select = document.getElementById('type-select');
-    document.getElementById('selected-label').innerText = mediaLabels[select.value];
-    // ไม่มีการเปลี่ยนค่าใน R และ P อีกต่อไป
+    const data = presets[select.value];
+    
+    if (data) {
+      // อัปเดตค่าที่ฟิกไว้ลงในช่อง Read-only
+      document.getElementById('val-r').value = data.rate;
+      document.getElementById('val-p').value = data.price;
+      document.getElementById('selected-label').innerText = "Selected: " + data.label;
+    } else {
+      // กรณีไม่ได้เลือก ให้กลับเป็น 0
+      document.getElementById('val-r').value = 0;
+      document.getElementById('val-p').value = 0;
+      document.getElementById('selected-label').innerText = "Please select media type above";
+    }
     calculate(); 
   }
 
   function calculate() {
-    // ดึงค่าจาก input fields ที่เป็นค่าคงที่ใน HTML
     const h = parseFloat(document.getElementById('val-h').value) || 0;
-    const r = parseFloat(document.getElementById('val-r').value); // ค่า 9.17
-    const p = parseFloat(document.getElementById('val-p').value); // ค่า 6000
+    const r = parseFloat(document.getElementById('val-r').value) || 0;
+    const p = parseFloat(document.getElementById('val-p').value) || 0;
     
+    // สูตรคำนวณ Hours * Rate * Price
     const total = h * r * p;
     
+    // แสดงผลลัพธ์ในรูปแบบสกุลเงิน $0.00
     document.getElementById('grand-total').innerText = 
       '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
-  
-  // เรียกคำนวณครั้งแรกเมื่อโหลดหน้าเว็บเพื่อให้แสดง $0.00
-  calculate();
 </script>
 
 </body>
