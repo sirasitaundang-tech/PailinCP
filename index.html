@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benefit Calculator</title>
+  <title>Benefit Calculator 2026</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,7 +16,7 @@
 
     .calculator-card {
       width: 100%;
-      max-width: 550px;
+      max-width: 580px; /* ขยายความกว้างเล็กน้อยเพื่อให้ตารางไม่แน่น */
       background: white;
       border-radius: 15px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.1);
@@ -56,13 +56,14 @@
       background-color: #003c78;
       color: white;
       padding: 12px 5px;
-      font-size: 11px; /* ปรับขนาดตัวอักษรหัวตารางให้พอดี */
+      font-size: 10px; /* ปรับขนาดเพื่อให้รับกับชื่อหน่วยที่ยาว */
       text-transform: uppercase;
       text-align: center;
+      letter-spacing: 0.5px;
     }
 
     td {
-      padding: 10px 5px;
+      padding: 10px 4px;
       border: 1px solid #eee;
     }
 
@@ -75,29 +76,42 @@
       border-radius: 5px;
       box-sizing: border-box;
       font-size: 13px;
+      text-align: center;
     }
 
-    select { cursor: pointer; background-color: #f9f9f9; }
+    select { cursor: pointer; background-color: #f9f9f9; text-align-last: center; }
 
     .result-section {
       background-color: #f8f9fa;
-      padding: 20px;
-      border-radius: 10px;
+      padding: 25px;
+      border-radius: 12px;
       text-align: center;
-      border: 1px solid #e9ecef;
+      border: 2px solid #e9ecef;
     }
 
     #selected-type-display {
       font-size: 14px;
       color: #666;
-      margin-bottom: 5px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
 
     .total-display {
       color: #28a745;
       font-weight: 800;
-      font-size: 28px;
+      font-size: 36px; /* ขยายขนาดตัวเลขผลลัพธ์ */
+      margin: 5px 0;
+    }
+
+    .save-cost-label {
+      font-size: 16px;
+      color: #1e7e34;
+      font-weight: bold;
+      letter-spacing: 2px;
+      border-top: 1px solid #ddd;
+      display: inline-block;
+      padding-top: 5px;
+      margin-top: 5px;
     }
 
     .footer-text {
@@ -105,6 +119,7 @@
       font-size: 11px;
       color: #bbb;
       margin-top: 20px;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -124,7 +139,7 @@
         <tr>
           <th class="col-media">Media</th>
           <th>Hours</th>
-          <th>rate: mmscf/hrs</th>
+          <th>Rate: mmscf/hrs</th>
           <th>$mmscf</th>
         </tr>
       </thead>
@@ -132,10 +147,10 @@
         <tr>
           <td>
             <select id="type-select" onchange="applyPreset()">
-              <option value="">-- Choose Media --</option>
-              <option value="gas_pacpp">Gas / PACPP (Full Operations)</option>
-              <option value="condy">CONDY PACPP (Condensate)</option>
-              <option value="remote">Gas Remote Platform (Offshore)</option>
+              <option value="">-- Select --</option>
+              <option value="gas_pacpp">Gas / PACPP</option>
+              <option value="condy">CONDY PACPP</option>
+              <option value="remote">Gas Remote Platform</option>
             </select>
           </td>
           <td><input type="number" id="val-h" value="0" oninput="calculate()"></td>
@@ -146,25 +161,23 @@
     </table>
 
     <div class="result-section">
-      <div id="selected-type-display">Please select media type</div>
-      <div class="total-display" id="grand-total">
-        $0.00
-      </div>
-      <div style="font-size: 13px; color: #28a745; font-weight: bold; margin-top: 5px; letter-spacing: 1px;">SAVE COST</div>
+      <div id="selected-type-display">Ready to Calculate</div>
+      <div class="total-display" id="grand-total">$0.00</div>
+      <div class="save-cost-label">SAVE COST</div>
     </div>
 
     <div class="footer-text">
       © Chevron — Internal Use Only<br>
-      Automated Estimation Tool (Updated 2026)
+      Automated Estimation Tool | Updated 2026
     </div>
   </div>
 </div>
 
 <script>
-  // ข้อมูล Preset (ใช้ค่าเดิมตามโค้ดต้นฉบับของคุณ)
+  // ข้อมูล Preset
   const presets = {
     gas_pacpp: { label: "Gas / PACPP", hours: 1, rate: 9.17, price: 6000 },
-    condy:     { label: "CONDY PACPP",     hours: 1, rate: 396,  price: 60 },
+    condy:     { label: "CONDY PACPP", hours: 1, rate: 396,  price: 60 },
     remote:    { label: "Gas Remote Platform", hours: 5, rate: 0.21, price: 6000 }
   };
 
@@ -176,9 +189,9 @@
       document.getElementById('val-h').value = data.hours;
       document.getElementById('val-r').value = data.rate;
       document.getElementById('val-p').value = data.price;
-      document.getElementById('selected-type-display').innerText = "Selected: " + data.label;
+      document.getElementById('selected-type-display').innerText = data.label;
     } else {
-      document.getElementById('selected-type-display').innerText = "No media selected";
+      document.getElementById('selected-type-display').innerText = "Manual Input Mode";
     }
     calculate(); 
   }
